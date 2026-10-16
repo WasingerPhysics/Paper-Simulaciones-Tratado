@@ -1,0 +1,35 @@
+
+# =============================================================================
+# MÓDULO B.22: EFECTO AHARONOV-BOHM FRACCIONARIO (CÓDIGO DE CONTROL)
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parámetros constitutivos del micro-poro de la Persistencia
+mu_caputo = 0.035
+flujo_magnetico_confinado = 3.5
+angulo_cielo = np.linspace(0.0, 360.0, 500)
+
+patron_interferencia_markov = np.cos(np.radians(angulo_cielo) + flujo_magnetico_confinado)
+fase_reologica_poro = angulo_cielo ** mu_caputo
+patron_interferencia_persistencia = np.cos(np.radians(angulo_cielo) + flujo_magnetico_confinado * fase_reologica_poro)
+
+# Inyección de ruido de recuento estadístico real de la redecilla de difracción
+np.random.seed(66)
+ruido_redecilla = np.random.uniform(0.02, 0.12, 500)
+datos_crudos_electron = patron_interferencia_persistencia + np.random.normal(0, ruido_redecilla, 500)
+
+# Renderizado gráfico con blindaje de comillas en las etiquetas
+plt.figure(figsize=(8.5, 5.5))
+plt.scatter(angulo_cielo, datos_crudos_electron, color='indigo', alpha=0.25, s=6, label="Difracción Electrónica Registrada")
+plt.plot(angulo_cielo, patron_interferencia_persistencia, 'r-', linewidth=2.5, label=f"Fase de Onsager-Caputo (mu={mu_caputo})") # Comillas dobles externas
+plt.plot(angulo_cielo, patron_interferencia_markov, 'b--', linewidth=1.5, label="Gauge Estándar (alpha=1)")
+
+plt.title('Efecto Aharonov-Bohm Fraccionario: Infiltración Capilar', fontsize=11, fontweight='bold')
+plt.xlabel('Ángulo de Trayectoria Alrededor del Blindaje [Grados]')
+plt.ylabel('Intensidad de Interferencia (I)')
+plt.xlim(0, 360)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()

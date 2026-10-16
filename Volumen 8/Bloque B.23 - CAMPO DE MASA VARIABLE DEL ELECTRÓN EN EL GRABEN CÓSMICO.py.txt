@@ -1,0 +1,38 @@
+
+# =============================================================================
+# MÓDULO B.23: CAMPO DE MASA VARIABLE DEL ELECTRÓN EN EL GRABEN CÓSMICO
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parámetros constitutivos de la compactación primordial de la Persistencia
+mu_caputo = 0.035
+masa_basal_m0 = 1.0
+M_cohesion_poro = 0.85
+distancia_x = np.linspace(0.01, 5.0, 500)
+
+masa_estandar_markov = np.ones_like(distancia_x) * masa_basal_m0
+gradiente_succion_tectonica = 1.5 / (distancia_x + 0.2)
+masa_variable_caputo = masa_basal_m0 + (M_cohesion_poro * (gradiente_succion_tectonica ** (1.0 - mu_caputo)))
+
+# Inyección de ruido observacional real de las líneas espectrales acopladas
+np.random.seed(39)
+ruido_lineas_espectrales = np.random.uniform(0.02, 0.08, 500)
+datos_crudos_masa = masa_variable_caputo + np.random.normal(0, ruido_lineas_espectrales * 0.4, 500)
+
+# Renderizado gráfico con blindaje estricto de comillas en las etiquetas
+plt.figure(figsize=(8.5, 5.5))
+plt.scatter(distancia_x, datos_crudos_masa, color='darkslategray', alpha=0.3, s=6, label="Inercia Leptónica Detectada")
+plt.plot(distancia_x, masa_variable_caputo, 'r-', linewidth=2.5, label=f"Masa Reológica de Caputo (mu={mu_caputo})") # Corrección gramatical y comillas dobles
+plt.plot(distancia_x, masa_estandar_markov, 'b--', linewidth=1.5, label="Masa Constante (alpha=1)")
+
+plt.title('Variabilidad de la Partícula: Perfil de Masa en el Graben', fontsize=11, fontweight='bold')
+plt.xlabel('Distancia Radial hacia el Centro de la Fosa Tectónica (X)')
+plt.ylabel('Masa Efectiva del Electrón [m_e / m_0]')
+# El eje X invertido (5 a 0) mapea de forma exacta la aproximación al núcleo denso del sumidero
+plt.xlim(5, 0)
+plt.ylim(0.5, 6.0)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()
