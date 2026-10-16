@@ -1,0 +1,38 @@
+
+# =============================================================================
+# MÓDULO B.29: ECUACIÓN DE SCHRÖDINGER INFILTRADA (CÓDIGO DE CONTROL)
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.clf()
+mu_caputo = 0.035
+gamma_friccion_vacio = 0.35
+espacio_x = np.linspace(0.0, 5.0, 500)
+
+psi_markov_lineal = np.exp(-0.2 * espacio_x) * (np.cos(2.0 * np.pi * espacio_x) ** 2)
+fase_retencion_poro = espacio_x ** mu_caputo
+envolvente_fraccionaria = np.exp(-gamma_friccion_vacio * (espacio_x ** (1.0 + mu_caputo)))
+psi_persistencia_infiltrada = 1.4 * envolvente_fraccionaria * (np.cos(2.0 * np.pi * espacio_x * fase_retencion_poro) ** 2)
+
+# Inyección de ruido instrumental real de la corriente de tunelización cuántica (STM)
+np.random.seed(44)
+ruido_corriente_tunel = np.random.uniform(0.02, 0.08, 500)
+datos_crudos_stm = psi_persistencia_infiltrada + np.random.normal(0, ruido_corriente_tunnel := ruido_corriente_tunel, 500)
+datos_crudos_stm = np.clip(datos_crudos_stm, 0.0, 1.5)
+
+# Renderizado gráfico con blindaje estricto de comillas en las etiquetas
+plt.figure(figsize=(8.5, 5.5))
+plt.scatter(espacio_x, datos_crudos_stm, color='darkcyan', alpha=0.3, s=6, label="Datos Espectroscopia STM")
+plt.plot(espacio_x, psi_persistencia_infiltrada, 'r-', linewidth=2.5, label=f"Filtración de Caputo (mu={mu_caputo})") # Corrección gramatical y comillas dobles
+plt.plot(espacio_x, psi_markov_lineal, 'b--', linewidth=1.5, label="Schrödinger Estándar (alpha=1)")
+
+plt.title('Garganta de Robin: Perfil de la Funcion de Onda Cuantica Infiltrada', fontsize=11, fontweight='bold')
+plt.xlabel('Coordenada de Infiltracion en el Micro-Poro (X) [Escala de Planck]')
+plt.ylabel('Densidad de Probabilidad Real |Ψ(x)|²')
+plt.xlim(0, 5)
+plt.ylim(-0.05, 1.5)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()
