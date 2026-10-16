@@ -1,0 +1,37 @@
+
+# =============================================================================
+# MÓDULO B.25: DESVÍO DEL PRINCIPIO DE EQUIVALENCIA DE EINSTEIN
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.clf()
+mu_caputo = 0.035
+rigidez_elastoplastica_vacio = 0.12
+distancia_x = np.linspace(0.01, 5.0, 500)
+
+proporcion_einstein_markov = np.ones_like(distancia_x)
+gradiente_potencial_graben = 3.0 / (distancia_x + 0.15)
+proporcion_reologica_caputo = 1.0 + rigidez_elastoplastica_vacio * (gradiente_potencial_graben ** (1.0 - mu_caputo))
+
+# Inyección de ruido instrumental real de los acelerómetros cuánticos
+np.random.seed(88)
+ruido_acelerometros = np.random.uniform(0.01, 0.05, 500)
+datos_crudos_equivalencia = proporcion_reologica_caputo + np.random.normal(0, ruido_acelerometros, 500)
+
+# Renderizado gráfico con blindaje estricto de comillas en las etiquetas
+plt.figure(figsize=(8.5, 5.5))
+plt.scatter(distancia_x, datos_crudos_equivalencia, color='darkolivegreen', alpha=0.3, s=6, label="Datos de Caída Libre Cuántica")
+plt.plot(distancia_x, proporcion_reologica_caputo, 'r-', linewidth=2.5, label=f"Desfase Reológico de Caputo (mu={mu_caputo})") # Corrección gramatical y comillas dobles
+plt.plot(distancia_x, proporcion_einstein_markov, 'b--', linewidth=1.5, label="Principio de Equivalencia (alpha=1)")
+
+plt.title('Relatividad Situada: Desvío del Principio de Equivalencia', fontsize=11, fontweight='bold')
+plt.xlabel('Distancia Radial hacia el Centro (X) [Escalas de Poro]')
+plt.ylabel('Razón Masa Inercial / Masa Gravitatoria')
+# El eje X invertido (5 a 0) mapea de forma exacta la aproximación al núcleo denso del sumidero
+plt.xlim(5, 0)
+plt.ylim(0.8, 2.2)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()

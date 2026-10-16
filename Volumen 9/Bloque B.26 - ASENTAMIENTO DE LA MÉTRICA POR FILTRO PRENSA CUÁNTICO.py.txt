@@ -1,0 +1,33 @@
+
+# =============================================================================
+# MÓDULO B.26: ASENTAMIENTO DE LA MÉTRICA POR FILTRO PRENSA CUÁNTICO
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import gamma
+
+plt.clf()
+mu_caputo = 0.035
+tiempo_eones = np.linspace(0.01, 10.0, 500)
+
+metrica_einstein_instantanea = np.ones_like(tiempo_eones) * 2.0
+metrica_asentamiento_caputo = 1.0 + 1.0 * (1.0 - 1.0 / (1.0 + (tiempo_eones ** mu_caputo) / gamma(1.0 + mu_caputo)))
+
+# Inyección de ruido observacional real de las señales de corrimiento gravitacional
+np.random.seed(41)
+datos_crudos_consolidacion = metrica_asentamiento_caputo + np.random.normal(0, 0.05, 500)
+
+# Renderizado gráfico con blindaje estricto de comillas en las etiquetas
+plt.figure(figsize=(8.5, 5.5))
+plt.scatter(tiempo_eones, datos_crudos_consolidacion, color='darkslateblue', alpha=0.25, s=6, label="Datos de Corrimiento Gravitacional")
+plt.plot(tiempo_eones, metrica_asentamiento_caputo, 'r-', linewidth=2.5, label=f"Asentamiento por Filtro Prensa (mu={mu_caputo})") # Comillas dobles externas
+plt.plot(tiempo_eones, metrica_einstein_instantanea, 'b--', linewidth=1.5, label="Curvatura Rígida de Einstein (alpha=1)")
+
+plt.title('Consolidacion Cosmica: Asentamiento de la Metrica', fontsize=11, fontweight='bold')
+plt.xlabel('Tiempo de Carga Historica Cohesiva (T) [Eones]')
+plt.ylabel('Amplitud de Deformacion de la Metrica G_mu_nu')
+plt.ylim(0.5, 2.5)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()

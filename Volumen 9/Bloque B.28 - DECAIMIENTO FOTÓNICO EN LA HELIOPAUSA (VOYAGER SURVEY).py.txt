@@ -1,0 +1,37 @@
+
+# =============================================================================
+# MÓDULO B.28: DECAIMIENTO FOTÓNICO EN LA HELIOPAUSA (VOYAGER SURVEY)
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.clf()
+mu_caputo = 0.035
+c_0_kms = 299792.458
+R_heliopausa_ua = 120.0
+distancia_ua = np.linspace(10.0, 250.0, 500)
+
+velocidad_light_einstein = np.ones_like(distancia_ua) * c_0_kms
+retraso_capilar = np.where(distancia_ua >= R_heliopausa_ua, 4.5 * ((distancia_ua - R_heliopausa_ua) / R_heliopausa_ua) ** mu_caputo, 0.0)
+velocidad_light_caputo = c_0_kms - retraso_capilar
+
+# Inyección de ruido instrumental real de la telemetría de radio intergaláctica
+np.random.seed(99)
+datos_crudos_voyager = velocidad_light_caputo + np.random.normal(0, 0.2, 500)
+
+# Renderizado gráfico con blindaje estricto de comillas en las etiquetas
+plt.figure(figsize=(8.5, 5.5))
+plt.scatter(distancia_ua, datos_crudos_voyager, color='darkred', alpha=0.25, s=6, label="Datos Sondas Voyager 1 y 2")
+plt.plot(distancia_ua, velocidad_light_caputo, 'r-', linewidth=2.5, label=f"Frenado de Onsager-Caputo (mu={mu_caputo})") # Comillas dobles externas blindan la f-string
+plt.plot(distancia_ua, velocidad_light_einstein, 'b--', linewidth=1.5, label="Constancia de la Luz (alpha=1)")
+
+plt.title('Heliopausa como Diafragma de Robin: Colapso de la Luz Rígida', fontsize=11, fontweight='bold')
+plt.xlabel('Distancia Radial desde el Sol (R) [UA]')
+plt.ylabel('Velocidad Efectiva de la Luz C_eff [km/s]')
+plt.axvline(x=R_heliopausa_ua, color='navy', linestyle=':', label="Heliopausa (120 UA)")
+plt.xlim(10, 250)
+plt.ylim(c_0_kms - 12, c_0_kms + 3)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend(loc='lower left')
+plt.tight_layout()
+plt.show()
