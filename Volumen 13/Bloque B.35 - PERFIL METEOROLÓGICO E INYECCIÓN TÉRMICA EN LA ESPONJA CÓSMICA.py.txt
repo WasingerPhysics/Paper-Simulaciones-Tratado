@@ -1,0 +1,46 @@
+
+# =============================================================================
+# MÓDULO B.35: PERFIL METEOROLÓGICO E INYECCIÓN TÉRMICA EN LA ESPONJA CÓSMICA
+# =============================================================================
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Simulación de Convección Térmica y Frente Meteorológico Cósmico de la Persistencia
+steps = 100
+distancia_r = np.linspace(0, 50, steps)  # Radio desde la falla termal (Mpc)
+mu = 0.035
+
+# Perfil de temperatura por disipación viscosa y decaimiento fraccionario de la cuenca
+temperatura_espaciotiempo = 10 * np.exp(-mu * distancia_r) + 2 / (1 + mu * distancia_r)
+viento_convectivo = 500 * np.exp(-mu * distancia_r)  # Velocidad del viento hidráulico (km/s)
+
+# Empaquetamiento de datos en un Graben de información ordenado para baja RAM
+df_clima = pd.DataFrame({
+    'Distancia_Falla_Mpc': distancia_r,
+    'Temperatura_Cosmica_MK': temperatura_espaciotiempo,  # Millones de Kelvin
+    'Viento_Intergalactico_km_s': viento_convectivo
+})
+df_clima.to_csv('climatologia_cosmica_volXIII.csv', index=False)
+
+# Entorno gráfico adaptado para el doble eje térmico-hidráulico de la netbook
+fig, ax1 = plt.subplots(figsize=(8, 4.5))
+# Blindaje de cadenas tipográficas mediante comillas dobles estándar
+ax1.plot(distancia_r, temperatura_espaciotiempo, 'r-', linewidth=2, label="Temperatura del Plasma (Tc)")
+ax1.set_xlabel('Distancia Radial desde la Falla (Mpc)')
+ax1.set_ylabel('Temperatura Cósmica (Millones de Kelvin)', color='r')
+ax1.tick_params(axis='y', labelcolor='r')
+ax1.grid(True, linestyle=':', alpha=0.6)
+
+ax2 = ax1.twinx()
+ax2.plot(distancia_r, viento_convectivo, 'b--', linewidth=2, label="Viento Meteorológico (vdarcy)")
+ax2.set_ylabel('Velocidad del Viento Hidráulico (km/s)', color='b')
+ax2.tick_params(axis='y', labelcolor='b')
+
+plt.title('Perfil Meteorológico e Inyección Térmica en la Esponja Cósmica', fontsize=11, fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+print("=== REPORTE METEOROLÓGICO CLIMATOLÓGICO VOLUMEN XIII ===")
+print("-> Matriz de datos 'climatologia_cosmica_volXIII.csv' exportada con éxito.")
+print("-> Perfil viscoelástico térmico guardado en el silicio.")

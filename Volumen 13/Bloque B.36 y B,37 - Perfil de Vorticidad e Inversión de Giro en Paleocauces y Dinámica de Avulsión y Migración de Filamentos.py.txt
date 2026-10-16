@@ -1,0 +1,65 @@
+
+# ===========================================================================
+# SIMULACIÓN NUMÉRICA Y ENTORNO GRÁFICO - TRATADO VOLUMEN XIII
+# ===========================================================================
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+plt.clf()
+steps = 100
+mu_universal = 0.035  # Constante Universal de Fricción de la Esponja Cósmica
+
+# 1. COMPONENTE TRANSVERSAL: Perfil de Vorticidad e Inversión de Giro en Paleocauces
+y_transversal = np.linspace(-50, 50, steps)  # Escala en Megapársecs (Mpc)
+velocidad_darcy = 100 * (1 - (y_transversal / 50)**2)  # Perfil parabólico de canal hidráulico
+vorticidad_orilla = -2 * 100 * (y_transversal / 50**2) * mu_universal  # Esfuerzo de cizalla de la Persistencia
+
+# 2. COMPONENTE TEMPORAL: Dinámica de Avulsión y Migración de Filamentos (Sección 4.2)
+tiempo_evolutivo = np.linspace(0, 100, steps)
+permeabilidad_eje_A = 100 * np.exp(-mu_universal * (tiempo_evolutivo / 10))  # Cierre por traba capilar
+permeabilidad_eje_B = 100 * (1 - np.exp(-mu_universal * (tiempo_evolutivo / 10)))  # Desborde de cuenca
+
+# Estructuración y Exportación de la Matriz de Datos en un Graben de Información Limpio
+df_astrogeometria = pd.DataFrame({
+    'Posicion_Transversal_Y_Mpc': y_transversal,
+    'Velocidad_Darcy_km_s': velocidad_darcy,
+    'Vorticidad_Espin_Orilla': vorticidad_orilla,
+    'Tiempo_Evolutivo_Transitorio': tiempo_evolutivo,
+    'Permeabilidad_Filamento_A': permeabilidad_eje_A,
+    'Permeabilidad_Filamento_B': permeabilidad_eje_B
+})
+df_astrogeometria.to_csv('matriz_astrogeomorfologica_volXIII.csv', index=False)
+
+# Configuración del Entorno de Gráficos en Paralelo optimizado para la Netbook
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+# Panel Izquierdo: Perfil de Canal y Vorticidad Cruzada (Predicción I) con blindaje de comillas
+ax1.plot(y_transversal, velocidad_darcy, color='blue', linestyle='-', linewidth=2, label="Velocidad del Flujo (v)")
+ax1.set_title('Perfil Transversal y Rotación de Orilla')
+ax1.set_xlabel('Posición Transversal Y (Mpc)')
+ax1.set_ylabel('Velocidad de Darcy (km/s)', color='blue')
+ax1.tick_params(axis='y', labelcolor='blue')
+ax1.grid(True, linestyle=':', alpha=0.6)
+
+ax1_twin = ax1.twinx()
+ax1_twin.plot(y_transversal, vorticidad_orilla, color='red', linestyle='--', linewidth=2, label="Vorticidad ()") # Comillas dobles de protección
+ax1_twin.set_ylabel('Fuerza de Giro / Helicidad (Sentido)', color='red')
+ax1_twin.tick_params(axis='y', labelcolor='red')
+ax1_twin.axhline(0, color='black', linestyle=':', alpha=0.5)  # Eje central del paleocauce fósil
+
+# Panel Derecho: Ciclo Temporal de Avulsión por Colmatación (Sección 4.2)
+ax2.plot(tiempo_evolutivo, permeabilidad_eje_A, color='green', linestyle='-', linewidth=2, label="Filamento A (Original)")
+ax2.plot(tiempo_evolutivo, permeabilidad_eje_B, color='darkmagenta', linestyle='-.', linewidth=2, label="Filamento B (Nuevo Brazo)")
+ax2.set_title('Dinámica de Avulsión Cósmica Tensorial')
+ax2.set_xlabel('Tiempo Evolutivo Transitorio')
+ax2.set_ylabel('Conductividad Hidráulica Efectiva (%)')
+ax2.legend(loc='best')
+ax2.grid(True, linestyle=':', alpha=0.6)
+
+plt.tight_layout()
+plt.show()
+
+print("=== REPORTE ASTROGEOMORFOLÓGICO SOBERANO VOLUMEN XIII ===")
+print("-> Archivo 'matriz_astrogeomorfologica_volXIII.csv' exportado correctamente.")
+print("-> Vorticidad de orilla e isomorfismo de avulsión grabados en el silicio.")
