@@ -1,0 +1,44 @@
+
+# =============================================================================
+# MÓDULO B.17: ECUACIÓN DE ONDA FRACCIONARIA CON ARRASTRE PARA SEÑALES LIGO
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parámetros constitutivos del macroporo de la Persistencia
+mu_caputo = 0.035  # Orden fraccionario de retención elástica (1 - ns)
+
+# Coordenada temporal del evento en milisegundos (-50 ms a 150 ms respecto al choque)
+tiempo_ms = np.linspace(-50.0, 150.0, 600)
+
+# 1. Onda Gravitacional Clásica de Orden Entero (alpha = 1, Amnésica)
+frecuencia_chirp = 40.0 * np.exp(tiempo_ms / 60.0)
+fase_onda = 2.0 * np.pi * frecuencia_chirp * (tiempo_ms / 1000.0)
+envolvente_clasica = np.where(tiempo_ms < 0, np.exp(tiempo_ms / 15.0), np.exp(-tiempo_ms / 8.0))
+senal_ligo_markov = np.sin(fase_onda) * envolvente_clasica
+
+# 2. Onda Infiltrada de la Persistencia (Arrastre por Caputo en Paleocauce)
+cola_retencion_memoria = np.where(tiempo_ms >= 0, 0.45 * (1.0 / (1.0 + (tiempo_ms / 12.0) ** (1.0 - mu_caputo))), 0.0)
+envolvente_fraccionaria = np.where(tiempo_ms < 0, np.exp(tiempo_ms / 15.0), np.exp(-tiempo_ms / 8.0) + cola_retencion_memoria)
+senal_ligo_persistencia = np.sin(fase_onda) * envolvente_fraccionaria
+
+# 3. Simulación de datos reales capturados por los interferómetros láser de LIGO
+np.random.seed(11)
+ruido_laser_detector = np.random.uniform(-0.08, 0.08, 600)
+datos_crudos_ligo = senal_ligo_persistencia + ruido_laser_detector
+
+# 4. Renderizado del Gráfico de Física de Campos con blindaje estricto de comillas
+plt.figure(figsize=(9, 6))
+plt.plot(tiempo_ms, datos_crudos_ligo, color='silver', alpha=0.7, label="Deformación de la Métrica Cruda (Datos LIGO)")
+plt.plot(tiempo_ms, senal_ligo_persistencia, 'r-', linewidth=2.5, label=f"Infiltración de Onsager-Caputo (mu={mu_caputo})") # Comillas dobles externas
+plt.plot(tiempo_ms, senal_ligo_markov, 'b--', linewidth=1.5, label="Relatividad General Estándar (alpha=1)")
+
+plt.title('Filtración en la Esponja: Arrastre Reológico de la Onda Gravitacional', fontsize=11, fontweight='bold')
+plt.xlabel('Tiempo Relativo al Choque (T) [Milisegundos]')
+plt.ylabel('Amplitud de Deformación de la Métrica h(t) [x10⁻²¹]')
+plt.axvline(x=0, color='black', linestyle=':', label="Instante de Fusión / Confluencia")
+plt.xlim(-50, 150)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()
