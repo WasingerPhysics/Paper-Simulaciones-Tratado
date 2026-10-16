@@ -1,0 +1,56 @@
+
+# =============================================================================
+# MÓDULO B.5: SOLVER CUÁNTICO FRACCIONARIO L1 (SCHRÖDINGER-CAPUTO)
+# =============================================================================
+import numpy as np
+from scipy.special import gamma
+
+def solver_schrodinger_caputo_L1(pasos_t, dt, E_energia, omega_c, beta_orden):
+    """
+    Simula la componente temporal T(t) de la función de onda cuántica fraccionaria.
+    Modela la aproximación L1 sobre el espacio de fases rotado a 45 grados, donde 
+    la evolución efectiva de la velocidad de infiltración cuántica conserva la memoria 
+    porosa a través de la viscosidad histórica del vacío de Planck.
+    """
+    # Inicialización de la amplitud compleja (Parte Real e Imaginaria)
+    T_amp = np.zeros(pasos_t + 1, dtype=complex)
+    T_amp[0] = 1.0 + 0.0j  # Condición inicial: amplitud normalizada en el origen
+    
+    # Factor de escala adimensionalizado para preservar la homogeneidad de unidades de la Persistencia
+    hbar = 1.0545718e-34
+    coef_cuantico = (dt**beta_orden) * (omega_c**(beta_orden - 1.0)) / (gamma(2.0 - beta_orden) * hbar)
+    
+    # Operador Hamiltoniano actuando de forma escalar para el estado estacionario en la garganta
+    Fuerza_H = -1j * E_energia
+    
+    for n in range(pasos_t):
+        RHS_hamiltoniano = Fuerza_H * T_amp[n]
+        
+        # Sumatoria de convolución L1 de la memoria histórica (Núcleo de Riemann-Liouville)
+        suma_memoria_cuantica = 0.0 + 0.0j
+        for k in range(n):
+            w_k = (n + 1 - k)**(1.0 - beta_orden) - (n - k)**(1.0 - beta_orden)
+            suma_memoria_cuantica += w_k * (T_amp[k+1] - T_amp[k])
+            
+        # Filtro de arranque elástico continuo de Robin para evitar singularidades por sobrepresión
+        factor_arranque = 1.0 if n > 5 else (n / 5.0)
+        
+        # Actualización del paso cuántico futuro en la Matriz Porosa de la Persistencia
+        T_amp[n+1] = T_amp[n] + (coef_cuantico * RHS_hamiltoniano - suma_memoria_cuantica) * factor_arranque
+        
+    return T_amp
+
+# Ejecución de control ultra-liviana optimizada para baja RAM (9 nodos temporales)
+N_pasos = 8
+E_test, w_test = 2.179e-18, 1e15  # Parámetros constitutivos a escala atómica
+Amplitud_T = solver_schrodinger_caputo_L1(N_pasos, 1e-16, E_test, w_test, 1.15)
+
+# --- LÍNEAS DE SALIDA OBLIGATORIAS PARA EL LECTOR DEL VOLUMEN II ---
+print("=== VERIFICACIÓN CUÁNTICA FRACCIONARIA DE SCHRÖDINGER-CAPUTO ===")
+print("-" * 65)
+print(f"-> Amplitud en el origen (t=0): {Amplitud_T[0]}")
+print(f"-> Amplitud cuántica final    : {Amplitud_T[-1]}")
+print("-" * 65)
+print("Valores de amplitud calculados nodo por nodo:")
+for i, amp in enumerate(Amplitud_T):
+    print(f"Nodo {i}: Magnitud = {abs(amp):.4f} | Complejo = {amp}")
