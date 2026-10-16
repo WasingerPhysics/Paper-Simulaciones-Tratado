@@ -1,0 +1,41 @@
+
+# ===========================================================================
+# ESQUEMA DE CONVOLUCIÓN L1 DE CAPUTO E INTEGRACIÓN EN EL SILICIO
+# ===========================================================================
+import numpy as np
+from scipy.special import gamma
+
+# Parámetros constitutivos del universo con memoria relacional
+Omega_m0, alpha = 0.315, 0.05
+N, t_max = 200, 1.2
+dt = t_max / N
+t_grid = np.linspace(0, t_max, N+1)
+
+a_frac = np.zeros(N+1)
+a_frac[0] = 0.1  # Condición de frontera inicial en el origen (Evita la singularidad)
+coef_g = (dt**alpha) / gamma(2.0 - alpha)
+
+# Bucle principal de convolución L1 de Caputo
+for n in range(N):
+    rho_m_f = Omega_m0 / (a_frac[n]**3)
+    omega_memoria = -1.0 + alpha
+    # Densidad de memoria acoplada a la ley de potencias fraccionaria de la Persistencia
+    rho_memoria = (1.0 - Omega_m0) * (a_frac[n]**(-3.0 * (1.0 + omega_memoria)))
+    Fuerza_Dinamica = a_frac[n] * np.sqrt(max(0.0, rho_m_f + rho_memoria))
+    
+    suma_memoria = 0.0
+    for k in range(n):
+        # Núcleo de ponderación histórica de Riemann-Liouville indexado correctamente
+        w_k = (n + 1 - k)**(1.0 - alpha) - (n - k)**(1.0 - alpha)
+        suma_memoria += w_k * (a_frac[k+1] - a_frac[k])
+        
+    # Filtro de inercia elástica de Robin para arranque continuo en la garganta
+    factor_arranque = 1.0 if n > 7 else (n / 7.0)
+    # Actualización del factor de escala del tejido poroso
+    a_frac[n+1] = a_frac[n] + (coef_g * Fuerza_Dinamica - suma_memoria) * factor_arranque
+
+# --- LÍNEAS DE SALIDA OBLIGATORIAS PARA EL LECTOR ---
+print("=== VERIFICACIÓN NUMÉRICA DEL UNIVERSO FRACCIONARIO L1 ===")
+print(f"-> Condición inicial en el origen (t=0): a_frac[0] = {a_frac[0]:.2f}")
+print(f"-> Factor de escala final calculado (t_max): a_frac[-1] = {a_frac[-1]:.4f}")
+print("Trayectoria guardada con éxito en la memoria del sistema.")

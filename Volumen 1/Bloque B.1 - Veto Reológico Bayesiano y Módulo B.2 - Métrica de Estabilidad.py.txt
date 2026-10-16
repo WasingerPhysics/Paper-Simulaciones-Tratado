@@ -1,0 +1,82 @@
+
+# ===========================================================================
+# APÉNDICE B: MÓDULOS B.1 Y B.2 UNIFICADOS Y CORREGIDOS
+# ===========================================================================
+import numpy as np
+from scipy.integrate import simpson
+
+# --- MÓDULO B.1: VETO REOLÓGICO BAYESIANO ---
+def calcular_veto_reologico_bayesiano(nodos_grid, coordenadas_x, puntos_confluencia_x):
+    c_param, sigma_ruido = 15.0, 0.05
+    n_datos = len(puntos_confluencia_x)
+    
+    Phi_datos = np.zeros((n_datos, n_datos))
+    for i in range(n_datos):
+        for j in range(n_datos):
+            r = np.abs(puntos_confluencia_x[i] - puntos_confluencia_x[j])
+            Phi_datos[i, j] = np.sqrt(r**2 + c_param**2)
+            
+    K_sigma_inv = np.linalg.inv(Phi_datos + (sigma_ruido**2) * np.eye(n_datos))
+    alpha_dinamico = np.ones(nodos_grid)
+    
+    for n in range(nodos_grid):
+        x_n = coordenadas_x[n]
+        k_cross = np.array([np.sqrt((x_n - xp)**2 + c_param**2) for xp in puntos_confluencia_x])
+        auto_covarianza = np.sqrt(c_param**2)
+        
+        varianza_post = np.abs(auto_covarianza - np.dot(k_cross, np.dot(K_sigma_inv, k_cross)))
+        
+        if varianza_post < 4.0:
+            alpha_dinamico[n] = 0.65 * (1.0 - np.exp(-varianza_post)) + 0.15
+        else:
+            alpha_dinamico[n] = 1.0
+            
+    return alpha_dinamico
+
+# --- MÓDULO B.2: MÉTRICA DE ESTABILIDAD GLOBAL (REGLA DE SIMPSON) ---
+def evaluar_estabilidad_global_simpson(nodos_grid, dx, campo_velocidades, perfil_alpha, h_ancestral):
+    V_local = np.zeros(nodos_grid)
+    dV_dt_local = np.zeros(nodos_grid)
+    masa_critica, temp_fondo = 1.5e5, 2.73
+    
+    # Computación exacta del gradiente espacial fuera del bucle para blindar la física del medio
+    gradiente_velocidad = np.gradient(campo_velocidades, dx)
+    
+    for i in range(nodos_grid):
+        alpha_local = perfil_alpha[i]
+        desviacion = (campo_velocidades[i]**2) - (h_ancestral**2)
+        V_local[i] = 0.5 * np.abs(desviacion) + (1.0 / (alpha_local + 1e-4))
+        
+        # Encastre limpio del forzante advectivo sin redundancia indexical
+        forzante = campo_velocidades[i] * gradiente_velocidad[i]
+        frenado = (masa_critica * (1.0 - alpha_local)) / temp_fondo
+        dV_dt_local[i] = forzante - frenado
+        
+    int_V_global = simpson(V_local, dx=dx)
+    int_dVdt_global = simpson(dV_dt_local, dx=dx)
+    return int_V_global, int_dVdt_global
+
+# --- CONDICIONES DE CONTROL Y EJECUCIÓN (CONTRALOR GEOMÉTRICO) ---
+X_grid = np.linspace(0.0, 200.0, 9)
+dx_geometrico = X_grid[1] - X_grid[0] # Extrae el delta real continuo (=25.0) para blindar el volumen de cuenca
+PUNTOS_TRINCHERA = np.array([25.0, 100.0, 175.0])
+
+# 1. Ejecución del Veto Reológico Bayesiano (Genera el perfil A_res)
+A_res = calcular_veto_reologico_bayesiano(9, X_grid, PUNTOS_TRINCHERA)
+V_g_res, dVdt_g_res = evaluar_estabilidad_global_simpson(9, dx_geometrico, np.array([220.0, 245.0, 260.0, 285.0, 310.0, 285.0, 260.0, 245.0, 220.0]), A_res, 200.0)
+
+# 2. Perfil elástico cuántico de Robin predefinido
+U_vel = np.array([220.0, 245.0, 260.0, 285.0, 310.0, 285.0, 260.0, 245.0, 220.0])
+A_din = np.array([1.0, 1.0, 0.35, 0.22, 0.1516, 0.22, 0.35, 1.0, 1.0])
+V_g_din, dVdt_g_din = evaluar_estabilidad_global_simpson(9, dx_geometrico, U_vel, A_din, 200.0)
+
+# --- IMPRESIÓN AUTOMÁTICA DE RESULTADOS EN PANTALLA ---
+print("=== REPORTE 1: CONTROL DE ESTABILIDAD GEOMÉTRICA (BAYESIANO) ===")
+print(f"-> Exponente dinámico (alpha) : {A_res}")
+print(f"-> Funcional de Lyapunov (V_g) : {V_g_res:.4f}")
+print(f"-> Tasa termodinámica (dV_dt)  : {dVdt_g_res:.4f}\n")
+
+print("=== REPORTE 2: CONTROL DE ESTABILIDAD GEOMÉTRICA (ROBIN) ===")
+print(f"-> Exponente dinámico (alpha) : {A_din}")
+print(f"-> Funcional de Lyapunov (V_g) : {V_g_din:.4f}")
+print(f"-> Tasa termodinámica (dV_dt)  : {dVdt_g_din:.4f}")
