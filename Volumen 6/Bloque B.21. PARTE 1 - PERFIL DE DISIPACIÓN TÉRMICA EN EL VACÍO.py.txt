@@ -1,0 +1,29 @@
+
+# =============================================================================
+# MÓDULO B.21 - PARTE 1: PERFIL DE DISIPACIÓN TÉRMICA EN EL VACÍO
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parámetros constitutivos derivados de la filtración residual
+mu_caputo = 0.035
+T0_actual_k = 2.7255
+z_redshift = np.linspace(0.0, 2.5, 500)
+
+# Enfriamiento markoviano ordinario frente a la fricción de Caputo
+T_vacio_markov = T0_actual_k * (1.0 + z_redshift)
+calor_ohmico_residual = 0.045 * (1.0 + z_redshift) ** (1.0 + mu_caputo)
+T_vacio_persistencia = T_vacio_markov + calor_ohmico_residual
+
+# Renderizado gráfico con blindaje estricto de comillas en las etiquetas
+plt.figure(figsize=(8, 5.5))
+plt.plot(z_redshift, T_vacio_persistencia, 'r-', linewidth=2.5, label="Disipación con Memoria de Caputo") # Corrección gramatical y comillas dobles
+plt.plot(z_redshift, T_vacio_markov, 'b--', linewidth=1.5, label="Enfriamiento Adiabático Clásico (alpha=1)")
+
+plt.title('A. Perfil de Temperatura del Vacio Cosmico', fontsize=11, fontweight='bold')
+plt.xlabel('Corrimiento al Rojo / Profundidad Temporal (z)')
+plt.ylabel('Temperatura Efectiva T(z) [Kelvin]')
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()
