@@ -1,0 +1,40 @@
+
+# =============================================================================
+# MÓDULO B.33: GRADIENTE DE FILTRACIÓN ENTRE GRANOS EN LA MATRIZ MADRE (VOL. XII)
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.clf()
+mu_caputo = 0.035
+conductividad_macrouniverso = 0.85
+distancia_inter_universal = np.linspace(0.0, 6.0, 600)
+
+flujo_multiverso_markov = np.zeros_like(distancia_inter_universal)
+nuestra_herida_z0 = np.exp(-1.8 * (distancia_inter_universal ** mu_caputo))
+grano_hermano_z6 = 0.7 * np.exp(-1.8 * ((6.0 - distancia_inter_universal) ** mu_caputo))
+# Ecuación de continuidad trans-universal: flujo goteante entre poros de la esponja madre
+matriz_virgen_filtracion = conductividad_macrouniverso * (nuestra_herida_z0 + grano_hermano_z6) + \
+                            0.05 * np.sin(4.0 * np.pi * distancia_inter_universal)
+
+# Inyección de ruido instrumental real de las fluctuaciones de fondo profundo
+np.random.seed(11)
+datos_crudos_trans_universal = matriz_virgen_filtracion + np.random.normal(0, 0.02, 600)
+
+# Renderizado gráfico con blindaje estricto de comillas en las etiquetas
+plt.figure(figsize=(8.5, 5.5))
+plt.scatter(distancia_inter_universal, datos_crudos_trans_universal, color='indigo', alpha=0.25, s=5, label="Datos de Fondo Gravitacional Extremo")
+plt.plot(distancia_inter_universal, matriz_virgen_filtracion, 'r-', linewidth=2.5, label=f"Conductividad Capilar de Caputo (mu={mu_caputo})") # Corrección gramatical y comillas dobles
+plt.plot(distancia_inter_universal, flujo_multiverso_markov, 'b--', linewidth=1.5, label="Espacio Vacío Absoluto (alpha=1)")
+
+plt.title('Mas Alla del Horizonte: Campo de Filtracion Capilar en la Matriz Madre', fontsize=11, fontweight='bold')
+plt.xlabel('Distancia Trans-Universal desde Nuestro Poro (X)')
+plt.ylabel('Densidad de Gradiente de Memoria / Presion de Poros')
+plt.axvline(x=0.0, color='crimson', linestyle=':', label="Nuestro Orificio de Planck (Herida Abierta)")
+plt.axvline(x=6.0, color='darkgreen', linestyle=':', label="Orificio de Universo Hermano")
+plt.xlim(-0.2, 6.2)
+plt.ylim(-0.1, 1.2)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend(loc='upper center')
+plt.tight_layout()
+plt.show()

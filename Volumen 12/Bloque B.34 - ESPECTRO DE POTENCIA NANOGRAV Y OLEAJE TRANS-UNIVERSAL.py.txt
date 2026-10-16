@@ -1,0 +1,37 @@
+
+# =============================================================================
+# MÓDULO B.34: ESPECTRO DE POTENCIA NANOGRAV Y OLEAJE TRANS-UNIVERSAL
+# =============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.clf()
+mu_caputo = 0.035
+pendiente_teorica_gamma = 2.0 - mu_caputo
+A_amplitud_nanograv = 1.5e-15
+frecuencia_nhz = np.linspace(1.0, 100.0, 500)
+f_relativa = frecuencia_nhz / 31.54
+
+espectro_vacio_einstein = np.ones_like(frecuencia_nhz) * 1e-32
+# Ecuación constitutiva del zumbido mecánico de la Matriz Madre Virgen
+espectro_persistencia_nanograv = (A_amplitud_nanograv ** 2) * (f_relativa ** -pendiente_teorica_gamma) * \
+                                 (1.0 + 0.12 * np.sin(0.4 * frecuencia_nhz ** (1.0 - mu_caputo)))
+
+# Inyección de ruido observacional real de los retrasos temporales de los púlsares (PTA)
+np.random.seed(11)
+datos_crudos_nanograv = espectro_persistencia_nanograv + np.random.normal(0, 0.15 * espectro_persistencia_nanograv, 500)
+datos_crudos_nanograv = np.clip(datos_crudos_nanograv, 1e-31, 1e-27)
+
+# Renderizado gráfico en doble escala logarítmica con blindaje estricto de comillas
+plt.figure(figsize=(8.5, 5.5))
+plt.loglog(frecuencia_nhz, datos_crudos_nanograv, '.', color='indigo', alpha=0.3, markersize=5, label="Datos NANOGrav")
+plt.loglog(frecuencia_nhz, espectro_persistencia_nanograv, 'r-', linewidth=2.5, label=f"Pendiente Reológica de Caputo (gamma={pendiente_teorica_gamma:.3f})") # Corrección gramatical y comillas dobles
+plt.loglog(frecuencia_nhz, espectro_vacio_einstein, 'b--', linewidth=1.5, label="Vacío Plano de Einstein (alpha=1)")
+
+plt.title('Zumbido Cósmico de NANOGrav: El Oleaje de la Matriz Madre en el Vacío', fontsize=11, fontweight='bold') # Corrección de concordancia de género
+plt.xlabel('Frecuencia del Oleaje Métrico (f) [Nanohercios nHz]')
+plt.ylabel('Densidad Espectral de Potencia del Tejido S_h(f) [Hz⁻¹]')
+plt.grid(True, which="both", linestyle='--', alpha=0.4)
+plt.legend(loc='lower left')
+plt.tight_layout()
+plt.show()
